@@ -1,0 +1,2 @@
+✅ Дата успешно выбрана: ('xpath', "//div[@class='react-datepicker__day react-datepicker__day--014']")
+✅ Заказ успешно оформлен!

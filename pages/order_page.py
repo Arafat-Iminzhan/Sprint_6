@@ -4,7 +4,11 @@ from locators.order_page_locators import OrderPageLocators
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import allure
+import logging
 
+# Настраиваем логгер
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class OrderPage(BasePage):
 
@@ -61,31 +65,16 @@ class OrderPage(BasePage):
     @allure.step('Выбор даты доставки')
     def set_date(self, date_locator):
         """ Открывает календарь, ожидает появления даты и выбирает её """
-        self.click_to_element(OrderPageLocators.DATE_FIELD)  # Открываем календарь
-
-        # Проверяем, что локатор передан правильно
-        if not isinstance(date_locator, tuple):
-            raise ValueError(f"Неверный локатор для даты: {date_locator}")
-
         try:
-            # Ждём появления даты в DOM
+            self.click_to_element(OrderPageLocators.DATE_FIELD)  # Открываем календарь
             WebDriverWait(self.driver, 5).until(
-                EC.presence_of_element_located(date_locator)
+                EC.visibility_of_element_located(date_locator)
             )
-
-            # Прокручиваем страницу до даты
-            self.scroll_to_element(date_locator)
-
-            # Дожидаемся кликабельности
-            WebDriverWait(self.driver, 5).until(
-                EC.element_to_be_clickable(date_locator)
-            )
-
             self.click_to_element(date_locator)  # Выбираем дату
-            print(f"✅ Дата успешно выбрана: {date_locator}")
+            logger.info(f"✅ Дата успешно выбрана: {date_locator}")  # Используем логгер вместо print
         except Exception as e:
-            print(f"❌ Ошибка при выборе даты: {e}")
-            raise Exception(f"Ошибка при выборе даты: {e}")  # Явно выбрасываем ошибку
+            logger.error(f"❌ Ошибка при выборе даты: {e}", exc_info=True)  # Логируем ошибку с трейсбеком
+            raise  # Пробрасываем исключение дальше
 
     @allure.step('Выбор срока аренды')
     def set_term(self, term):

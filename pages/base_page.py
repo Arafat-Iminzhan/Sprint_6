@@ -1,11 +1,14 @@
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
-
+import allure
 
 class BasePage:
     def __init__(self, driver):
         self.driver = driver
 
+    @allure.step("Возвращает URL текущей страницы")
+    def get_current_page_url(self):
+        return self.driver.current_url
 
     def open_url(self, url):
         self.driver.get(url)

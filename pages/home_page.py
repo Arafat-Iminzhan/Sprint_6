@@ -34,6 +34,4 @@ class HomePage(BasePage):
         self.open_url(Urls.HOME_PAGE)
         self.wait_element_visibility_of_element_located(HomePageLocators.COOKIES_BTN)
 
-    @allure.step("Возвращает URL текущей страницы")
-    def get_current_page_url(self):
-        return self.driver.current_url
+

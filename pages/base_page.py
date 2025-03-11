@@ -1,5 +1,5 @@
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import allure
 
 class BasePage:
@@ -8,53 +8,57 @@ class BasePage:
 
     @allure.step("Возвращает URL текущей страницы")
     def get_current_page_url(self):
+        """Возвращает текущий URL страницы"""
         return self.driver.current_url
 
     def open_url(self, url):
+        """Открывает указанный URL"""
         self.driver.get(url)
 
     def get_current_url(self):
+        """Возвращает текущий URL"""
         return self.driver.current_url
 
-    def find_element(self, locator):
-        return WebDriverWait(self.driver, 5).until(expected_conditions.visibility_of_element_located(locator))
+    def wait_for_element_visible(self, locator, timeout=10):
+        """Ожидает, пока элемент станет видимым"""
+        return WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(locator))
 
+    def wait_for_element_clickable(self, locator, timeout=5):
+        """Ожидает, пока элемент станет кликабельным"""
+        return WebDriverWait(self.driver, timeout).until(EC.element_to_be_clickable(locator))
+
+    def find_element(self, locator):
+        """Находит элемент на странице и возвращает его"""
+        return self.wait_for_element_visible(locator)
 
     def click_to_element(self, locator):
-        WebDriverWait(self.driver, 5).until(expected_conditions.element_to_be_clickable(locator))
-        self.driver.find_element(*locator).click()
-
-
-    def wait_element_visibility_of_element_located(self, locator):
-        WebDriverWait(self.driver, 3).until(expected_conditions.visibility_of_element_located(locator))
-
-
-    def get_text(self, locator):
-        return WebDriverWait(self.driver, 5).until(expected_conditions.visibility_of_element_located(locator)).text
-
+        """Кликает на элемент, предварительно ожидая его кликабельности"""
+        element = self.wait_for_element_clickable(locator)
+        element.click()
 
     def set_text(self, locator, text):
-        WebDriverWait(self.driver, 5).until(expected_conditions.element_to_be_clickable(locator))
-        self.driver.find_element(*locator).send_keys(text)
+        """Ожидает и вводит текст в поле"""
+        element = self.wait_for_element_clickable(locator)
+        element.send_keys(text)
 
-
-    def scroll(self, locator):
-        element = self.find_element(locator)
-        return self.driver.execute_script("arguments[0].scrollIntoView();", element)
-
-
-    def get_cookies(self, locator):
-        WebDriverWait(self.driver, 5).until(expected_conditions.visibility_of_element_located(locator)).click()
-
-
-    def wait_navigating_url(self, url):
-        WebDriverWait(self.driver, 10).until(expected_conditions.url_to_be(url))
-
-
-    def tab_switch(self):
-        self.driver.switch_to.window(self.driver.window_handles[1])
+    def get_text(self, locator):
+        """Ожидает и получает текст элемента"""
+        return self.wait_for_element_visible(locator).text
 
     def scroll_to_element(self, locator):
         """Прокручивает страницу до нужного элемента"""
         element = self.find_element(locator)
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+
+    def wait_navigating_url(self, url, timeout=10):
+        """Ожидает, пока текущий URL изменится на указанный"""
+        WebDriverWait(self.driver, timeout).until(EC.url_to_be(url))
+
+    def get_cookies(self, locator):
+        """Принимает cookies, если элемент присутствует"""
+        self.wait_for_element_clickable(locator)
+        self.click_to_element(locator)
+
+    def tab_switch(self):
+        """Переключается на вторую вкладку браузера"""
+        self.driver.switch_to.window(self.driver.window_handles[1])

@@ -1,6 +1,5 @@
 from locators.home_page_locators import HomePageLocators
 from pages.home_page import HomePage
-from conftest import driver
 from utils.test_data import YaScooterHomePageFAQ
 import pytest
 import allure
@@ -13,7 +12,23 @@ class TestQuestionsHomePage:
         home_page = HomePage(driver)
         home_page.open_home_page()
         home_page.get_cookies(HomePageLocators.COOKIES_BTN)
-        home_page.scroll(HomePageLocators.LAST_QUESTION)
+
+
+        # Прокрутка до последнего вопроса (чтобы избежать проблем с видимостью)
+        home_page.scroll_to_element(HomePageLocators.LAST_QUESTION)
+
+        # Формируем правильный локатор вопроса
+        question_locator = (HomePageLocators.QUESTION[0], HomePageLocators.QUESTION[1].format(number))
+
+        # Ожидание кликабельности и клик по вопросу
+        home_page.wait_for_element_clickable(question_locator)
         home_page.click_question(number)
-        answer = home_page.get_answer(number)
-        assert answer == expected_answer
+
+        # Формируем правильный локатор ответа
+        answer_locator = (HomePageLocators.ANSWER[0], HomePageLocators.ANSWER[1].format(number))
+
+        # Ожидание появления ответа
+        home_page.wait_for_element_visible(answer_locator)
+        answer = home_page.get_text(answer_locator)
+
+        assert answer == expected_answer, f"Ожидали: '{expected_answer}', получили: '{answer}'"
